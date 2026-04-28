@@ -1,0 +1,9 @@
+# 전체 파일 무시
+*
+
+# reports/YYYY.MM/recommend 폴더만 허용
+!reports/
+!reports/*/
+!reports/*/recommend/
+!reports/*/recommend/**
+!.gitignore

@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>추천 종목 TOP 10 — 2026-03-16</title>
+    <style>
+        /* ── 기본 설정 ── */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        /* ── 카드 래퍼 ── */
+        .card {
+            max-width: 1300px;
+            margin: 0 auto;
+            background: #1e293b;
+            border-radius: 1.25rem;
+            box-shadow: 0 25px 60px rgba(0,0,0,.5);
+            overflow: hidden;
+        }
+
+        /* ── 헤더 ── */
+        .header {
+            background: linear-gradient(135deg, #1d4ed8 0%, #7c3aed 100%);
+            padding: 2rem 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .header-left h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+        .header-left p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 0.3rem;
+        }
+        .header-right {
+            text-align: right;
+        }
+        .header-right .date {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        .header-right .time {
+            font-size: 0.85rem;
+            opacity: 0.75;
+        }
+
+        /* ── 범례 ── */
+        .legend {
+            display: flex;
+            gap: 1.5rem;
+            padding: 1rem 2.5rem;
+            background: #162032;
+            flex-wrap: wrap;
+            font-size: 0.82rem;
+            color: #94a3b8;
+        }
+        .legend-item { display: flex; align-items: center; gap: 0.4rem; }
+
+        /* ── 테이블 ── */
+        .table-wrap { overflow-x: auto; padding: 0 1rem 1.5rem; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+        thead tr {
+            background: #0f172a;
+            color: #94a3b8;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        th {
+            padding: 0.75rem 0.6rem;
+            white-space: nowrap;
+            font-weight: 600;
+        }
+        tbody tr {
+            border-bottom: 1px solid #1e293b;
+            transition: background 0.15s;
+        }
+        tbody tr:nth-child(even) { background: #162032; }
+        tbody tr:hover { background: #1d3050; }
+        td { padding: 0.7rem 0.6rem; vertical-align: middle; }
+
+        /* ── 정렬 ── */
+        .center { text-align: center; }
+        .right  { text-align: right; }
+
+        /* ── 순위 ── */
+        .rank-top3 {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #fbbf24;
+        }
+        .rank-normal { color: #94a3b8; font-weight: 600; }
+
+        /* ── 배지 ── */
+        .badge {
+            display: inline-block;
+            padding: 0.2rem 0.55rem;
+            border-radius: 9999px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .badge-fire  { background: #7f1d1d; color: #fca5a5; }
+        .badge-star  { background: #713f12; color: #fde68a; }
+        .badge-normal{ background: #1e3a5f; color: #93c5fd; }
+
+        /* ── 시장 ── */
+        .market-kospi  { color: #60a5fa; font-weight: 700; }
+        .market-kosdaq { color: #a78bfa; font-weight: 700; }
+
+        /* ── 종목 코드 ── */
+        .code { font-family: monospace; color: #94a3b8; font-size: 0.82rem; }
+
+        /* ── 점수 ── */
+        .score-total { color: #34d399; font-weight: 700; font-size: 0.95rem; }
+
+        /* ── 종목명 ── */
+        .stock-name { font-weight: 700; color: #3b82f6; white-space: nowrap; }
+
+        /* ── 현재가 ── */
+        .price { font-weight: 700; color: #fbbf24; white-space: nowrap; }
+
+        /* ── 섹터 ── */
+        .sector { color: #94a3b8; font-size: 0.82rem; }
+
+        /* ── 52주 위치 ── */
+        .progress-wrap {
+            width: 80px;
+            height: 6px;
+            background: #334155;
+            border-radius: 9999px;
+            overflow: hidden;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .progress-bar {
+            height: 100%;
+            border-radius: 9999px;
+            transition: width 0.3s;
+        }
+        .pct-label {
+            font-size: 0.78rem;
+            color: #94a3b8;
+            margin-left: 0.4rem;
+            vertical-align: middle;
+        }
+
+        /* ── 푸터 ── */
+        .footer {
+            text-align: center;
+            padding: 1.25rem;
+            font-size: 0.78rem;
+            color: #475569;
+            border-top: 1px solid #1e293b;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <!-- 헤더 -->
+        <div class="header">
+            <div class="header-left">
+                <h1>📊 오늘의 추천 종목 TOP 10</h1>
+                <p>팩터 투자 기반 종합 점수 상위 종목 (가치 · 품질 · 모멘텀)</p>
+            </div>
+            <div class="header-right">
+                <div class="date">2026년 03월 16일</div>
+                <div class="time">기준 시각: 08:00</div>
+            </div>
+        </div>
+
+        <!-- 범례 -->
+        <div class="legend">
+            <span class="legend-item"><span class="badge badge-fire">🔥 HOT</span> 종합점수 0.85 이상</span>
+            <span class="legend-item"><span class="badge badge-star">⭐ GOOD</span> 종합점수 0.70 이상</span>
+            <span class="legend-item"><span class="badge badge-normal">WATCH</span> 0.70 미만</span>
+            <span class="legend-item" style="margin-left:auto;">※ 52주위치: 저점~고점 구간 내 현재가 위치 (100% = 52주 최고가)</span>
+            <span class="legend-item">※ 참고용 데이터입니다. 투자 판단은 본인 책임입니다.</span>
+        </div>
+
+        <!-- 테이블 -->
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="center">순위</th>
+                        <th class="center">등급</th>
+                        <th class="center">시장</th>
+                        <th class="center">코드</th>
+                        <th>종목명</th>
+                        <th class="right">현재가</th>
+                        <th>섹터</th>
+                        <th class="right">종합점수</th>
+                        <th class="right">가치</th>
+                        <th class="right">품질</th>
+                        <th class="right">모멘텀</th>
+                        <th class="center">52주 위치</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+            <tr>
+                <td class="center rank-top3">1</td>
+                <td class="center"><span class="badge badge-fire">🔥 HOT</span></td>
+                <td class="center market-kospi">KOSPI</td>
+                <td class="center code">005930</td>
+                <td class="stock-name">삼성전자</td>
+                <td class="right price">183,500</td>
+                <td class="sector">통신 및 방송 장비 제조업</td>
+                <td class="right score-total">2.2163</td>
+                <td class="right">3.1905</td>
+                <td class="right">0.5787</td>
+                <td class="right">2.5551</td>
+                <td class="center">-</td>
+            </tr>
+            <tr>
+                <td class="center rank-top3">2</td>
+                <td class="center"><span class="badge badge-fire">🔥 HOT</span></td>
+                <td class="center market-kospi">KOSPI</td>
+                <td class="center code">015760</td>
+                <td class="stock-name">한국전력공사</td>
+                <td class="right price">48,300</td>
+                <td class="sector">전기업</td>
+                <td class="right score-total">2.1377</td>
+                <td class="right">3.1905</td>
+                <td class="right">0.5891</td>
+                <td class="right">2.2827</td>
+                <td class="center">-</td>
+            </tr>
+            <tr>
+                <td class="center rank-top3">3</td>
+                <td class="center"><span class="badge badge-fire">🔥 HOT</span></td>
+                <td class="center market-kosdaq">KOSDAQ</td>
+                <td class="center code">032190</td>
+                <td class="stock-name">다우데이타</td>
+                <td class="right price">24,050</td>
+                <td class="sector">기계장비 및 관련 물품 도매업</td>
+                <td class="right score-total">2.1110</td>
+                <td class="right">3.1905</td>
+                <td class="right">0.8428</td>
+                <td class="right">1.9400</td>
+                <td class="center">-</td>
+            </tr>
+            <tr>
+                <td class="center rank-normal">4</td>
+                <td class="center"><span class="badge badge-fire">🔥 HOT</span></td>
+                <td class="center market-kospi">KOSPI</td>
+                <td class="center code">005440</td>
+                <td class="stock-name">현대지에프홀딩스</td>
+                <td class="right price">14,600</td>
+                <td class="sector">기타 금융업</td>
+                <td class="right score-total">2.0852</td>
+                <td class="right">3.3350</td>
+                <td class="right">0.0000</td>
+                <td class="right">2.5041</td>
+                <td class="center">-</td>
+            </tr>
+            <tr>
+                <td class="center rank-normal">5</td>
+                <td class="center"><span class="badge badge-fire">🔥 HOT</span></td>
+                <td class="center market-kospi">KOSPI</td>
+                <td class="center code">316140</td>
+                <td class="stock-name">우리금융지주</td>
+                <td class="right price">32,200</td>
+                <td class="sector">기타 금융업</td>
+                <td class="right score-total">2.0133</td>
+                <td class="right">3.1905</td>
+                <td class="right">0.5935</td>
+                <td class="right">1.8635</td>
+                <td class="center">-</td>
+            </tr>
+            <tr>
+                <td class="center rank-normal">6</td>
+                <td class="center"><span class="badge badge-fire">🔥 HOT</span></td>
+                <td class="center market-kospi">KOSPI</td>
+                <td class="center code">000660</td>
+                <td class="stock-name">SK하이닉스</td>
+                <td class="right price">910,000</td>
+                <td class="sector">반도체 제조업</td>
+                <td class="right score-total">1.8759</td>
+                <td class="right">1.9072</td>
+                <td class="right">1.1550</td>
+                <td class="right">2.5551</td>
+                <td class="center">-</td>
+            </tr>
+            <tr>
+                <td class="center rank-normal">7</td>
+                <td class="center"><span class="badge badge-fire">🔥 HOT</span></td>
+                <td class="center market-kosdaq">KOSDAQ</td>
+                <td class="center code">065060</td>
+                <td class="stock-name">지엔코</td>
+                <td class="right price">517</td>
+                <td class="sector">봉제의복 제조업</td>
+                <td class="right score-total">1.8656</td>
+                <td class="right">2.9382</td>
+                <td class="right">-0.2541</td>
+                <td class="right">2.5551</td>
+                <td class="center">-</td>
+            </tr>
+            <tr>
+                <td class="center rank-normal">8</td>
+                <td class="center"><span class="badge badge-fire">🔥 HOT</span></td>
+                <td class="center market-kospi">KOSPI</td>
+                <td class="center code">105560</td>
+                <td class="stock-name">KB금융</td>
+                <td class="right price">148,900</td>
+                <td class="sector">기타 금융업</td>
+                <td class="right score-total">1.8560</td>
+                <td class="right">3.1905</td>
+                <td class="right">0.5700</td>
+                <td class="right">1.3627</td>
+                <td class="center">-</td>
+            </tr>
+            <tr>
+                <td class="center rank-normal">9</td>
+                <td class="center"><span class="badge badge-fire">🔥 HOT</span></td>
+                <td class="center market-kospi">KOSPI</td>
+                <td class="center code">005940</td>
+                <td class="stock-name">NH투자증권</td>
+                <td class="right price">31,700</td>
+                <td class="sector">금융 지원 서비스업</td>
+                <td class="right score-total">1.8372</td>
+                <td class="right">3.1905</td>
+                <td class="right">0.5727</td>
+                <td class="right">1.2972</td>
+                <td class="center">-</td>
+            </tr>
+            <tr>
+                <td class="center rank-normal">10</td>
+                <td class="center"><span class="badge badge-fire">🔥 HOT</span></td>
+                <td class="center market-kospi">KOSPI</td>
+                <td class="center code">138930</td>
+                <td class="stock-name">BNK금융지주</td>
+                <td class="right price">18,270</td>
+                <td class="sector">기타 금융업</td>
+                <td class="right score-total">1.8286</td>
+                <td class="right">3.1905</td>
+                <td class="right">0.4779</td>
+                <td class="right">1.3635</td>
+                <td class="center">-</td>
+            </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 푸터 -->
+        <div class="footer">
+            생성: 2026-03-16 08:00:02 &nbsp;|&nbsp; Domestic Stock Trading System
+        </div>
+    </div>
+</body>
+</html>
